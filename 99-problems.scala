@@ -113,7 +113,7 @@ def myDrop[A](l: List[A], n: Int): List[A] =
  
 // problem 17 - do not use any predefined function
 // scala> mySplit(l3, 3)
-// val res10: List[List[Char]] = List(List(a, b, c, d), List(d, e, f, g, h, i, j))
+// val res10: List[List[Char]] = List(List(a, b, c), List(d, e, f, g, h, i, j))
 def mySplit[A](l: List[A], n: Int): List[List[A]] =
   val x: List[A] = (for i <- 0 until n yield l(i)).toList
   val xs: List[A] = (for i <- n until l.length yield l(i)).toList
@@ -151,5 +151,31 @@ def removeAt[A](l: List[A], n: Int): List[A] =
   val List(fp, np) = mySplit(l, n-1)
   fp ++ np.tail
 
+// problem 21
+// val res3: List[Matchable | List[Matchable]] = List(a, b, c, d, abc, e, f, g, h)
+// scala> insertAt("a", l1, 5)
+// val res4: List[Matchable | List[Matchable]] = List(a, b, c, d, a, e, f, g, h)
+// scala> insertAt('z', l1, 5)
+// val res5: List[Char | List[Char]] = List(a, b, c, d, z, e, f, g, h)
+def insertAt[A](item: A | List[A], l: List[A], n: Int): List[A | List[A]] =
+  val List(fp, np) = mySplit(l, n-1)
+  fp ++ List(item) ++ np
 
+// problem 22
+def myRange(start: Int, end: Int): List[Int] =
+  Range.inclusive(start, end, (end-start).sign).toList
 
+// problem 23
+import scala.util.Random
+def rndSelect[A](l: List[A], n: Int): List[A] =
+  Random.shuffle(l).take(n)
+
+// problem 24
+def lottoSelect(start: Int, end: Int): List[Int] =
+  rndSelect(myRange(start, end),Random.between(start, end - start))
+
+// problem 25
+def rndPermu[A](l: List[A]): List[A] = Random.shuffle(l)
+
+// problem 26
+def myCombination[A](n: Int, l: List[A]) : List[List[A]] = l.combinations(3).toList
