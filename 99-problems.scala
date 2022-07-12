@@ -178,4 +178,50 @@ def lottoSelect(start: Int, end: Int): List[Int] =
 def rndPermu[A](l: List[A]): List[A] = Random.shuffle(l)
 
 // problem 26
-def myCombination[A](n: Int, l: List[A]) : List[List[A]] = l.combinations(3).toList
+def myCombination2[A](n: Int, l: List[A]): List[List[A]] = l.combinations(n).toList
+
+// scala> myCombination(2, List('a','b','c','d','e'))
+// val res31: List[List[Char]] = List(List(a, b), List(a, c), List(a, d), List(a, e), List(b, c), List(b, d), List(b, e), List(c, d), List(c, e), List(d, e))
+def myCombination[A](n: Int, l: List[A]): List[List[A]] = 
+  if l.isEmpty then
+    List()
+  else if n == l.length then
+    List(l)
+  else if n == 1 then
+    l.grouped(1).toList
+  else 
+    myCombination(n-1, l.tail).map(List(l.head)++_) ++ myCombination(n, l.tail)
+
+def factorial(n: Int): Int =
+  if n == 1 || n < 1 then
+    1
+  else
+    n * factorial(n-1)
+
+// problem 27
+// In how many ways can a group of 9 people work in 3 disjoint subgroups of 2, 3 and 4 persons?
+// scala> group3(l2)
+// val res21: List[List[List[Int]]] = List(List(List(1, 2), List(3, 4, 5), List(6, 7, 8, 9)), List(List(1, 2), List(3, 4, 6), List(5, 7, 8, 9)), List(List(1, 2), List(3, 4, 7), List(5, 6, 8, 9)), List(List(1, 2), List(3, 4, 8), List(5, 6, 7, 9)), List(List(1, 2), List(3, 4, 9), List(5, 6, 7, 8)), List(List(1, 2), List(3, 5, 6), ...
+// scala> res21(0)
+// val res25: List[List[Int]] = List(List(1, 2), List(3, 4, 5), List(6, 7, 8, 9))
+// 
+// scala> res21(37)
+// val res26: List[List[Int]] = List(List(1, 3), List(2, 4, 7), List(5, 6, 8, 9))
+// scala> res21(1000)
+// val res29: List[List[Int]] = List(List(5, 7), List(2, 4, 7), List(1, 3, 6, 8, 9))
+def group3[A](l: List[A]): List[List[List[A]]] =
+  val combiOf2: List[List[A]] = myCombination(2, l) // should have 36 Lists
+  val leftOver7: List[List[A]] = combiOf2.map(l.diff(_)) // 36 lists
+  val combiOf3: List[List[A]] = leftOver7.flatMap(myCombination(3,_)) // should have 36 * 35
+  // final 3 groups are combiOf2 + this 7 + leftover 4
+  var counter = 0 // not ideal
+  combiOf3.grouped(combiOf2.length).toList.flatMap(ll =>
+      val r = ll.map(a=>
+        val leftOver4 = leftOver7(counter).diff(a)
+        List(combiOf2(counter))++List(a)++List(leftOver4)
+      )
+      counter += 1
+      r
+    )
+
+
