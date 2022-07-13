@@ -257,4 +257,26 @@ def lfsort[A](l: List[List[A]]): List[List[A]] =
   sortedHm.flatMap(_._2._2)
 
 
+// problem 31
+// https://byjus.com/maths/how-to-find-prime-numbers/#How%20to%20check%20a%20prime%20number?
+// https://socratic.org/questions/how-are-prime-numbers-used
+def sumOfDigits(n: Int): Int =
+  if n == 0 then
+    0
+  else 
+    val (div, rem) = (BigInt(n)/%BigInt(10))
+    rem.intValue + sumOfDigits(div.intValue)
+
+def isPrime(n: Int): Boolean =
+  val lastDigit = (BigInt(n)/%BigInt(10))._2.intValue
+  // false if unit place ends with 0,2,4,6,8
+  if List(0,2,4,6,8).foldLeft(false)((a,b) => b == lastDigit || a) then
+    false
+  // If a large number is ending with 5, then it is always divisible by 5.
+  else if n > 10 && lastDigit == 5 then
+    false
+  // If sum of digits divisible by 3, then not prime number
+  else if sumOfDigits(n) % 3 == 0 then
+    false
+  else true
   
