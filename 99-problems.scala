@@ -207,7 +207,7 @@ def factorial(n: Int): Int =
 // 
 // scala> res21(37)
 // val res26: List[List[Int]] = List(List(1, 3), List(2, 4, 7), List(5, 6, 8, 9))
-// scala> res21(1000)
+// scala> res21(1000) <-- wrong
 // val res29: List[List[Int]] = List(List(5, 7), List(2, 4, 7), List(1, 3, 6, 8, 9))
 def group3[A](l: List[A]): List[List[List[A]]] =
   val combiOf2: List[List[A]] = myCombination(2, l) // should have 36 Lists
@@ -224,4 +224,37 @@ def group3[A](l: List[A]): List[List[List[A]]] =
       r
     )
 
+def listProduct[A](l1: List[A], l2: List[A]) =
+  for a1 <- l1
+      a2 <- l2
+  yield
+      List(a1) ++ List(a2)
+      
+// problem 27b
+// scala> myGroup(l2,List(2,3,4))
+// val res34: List[List[List[Char]]] = List(List(List(a, b), List(c, d, e), List(f, g, h, i)), List(List(a, b), List(c, d, f), List(e, g, h, i)), List(List(a, b), List(c,       
+// scala> res34(1000)
+// val res35: List[List[Char]] = List(List(e, h), List(b, d, g), List(a, c, f, i))
+def myGroup[A](l: List[A], sets: List[Int]): List[List[List[A]]] =
+  if sets.isEmpty then
+    List(List())
+  else
+    val curN = sets.head
+    myCombination(curN, l).flatMap(c=>
+        myGroup(l.diff(c), sets.tail).map(a =>
+          List(c) ++ a
+        ))
+// problem 28a - length sort
+// scala> lsort(List(List('a','b','c'), List('d','e'), List('f','g','h'), List('d','e'), List('i','j','k','l'), List('m','n'), List('o')))
+// val res3: List[List[Char]] = List(List(o), List(d, e), List(d, e), List(m, n), List(a, b, c), List(f, g, h), List(i, j, k, l))
+def lsort[A](l: List[List[A]]): List[List[A]] =
+  l.sorted(Ordering.by[List[A], Int](_.length)) 
+    
+// problem 28b - actually problem 30
+def lfsort[A](l: List[List[A]]): List[List[A]] =
+  val hm = l.groupBy(_.length).map((k,v) => k -> (v.length, v)).iterator.toList
+  val sortedHm = hm.sorted(Ordering.by[(Int, (Int, List[List[A]])), Int](_._2._1))
+  sortedHm.flatMap(_._2._2)
 
+
+  
