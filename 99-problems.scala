@@ -266,7 +266,18 @@ def sumOfDigits(n: Int): Int =
   else 
     val (div, rem) = (BigInt(n)/%BigInt(10))
     rem.intValue + sumOfDigits(div.intValue)
-
+    
+// scala> genPrime(200)
+// val res54: List[Int] = List(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199)
+def genPrime(n: Int): List[Int] = 
+  var primes = ArrayBuffer[Int](2)
+  for 
+    i <- 3 to n 
+  do
+    if primes.forall(i%_ != 0) then primes.addOne(i)
+  primes.toList
+   
+// problem 31
 def isPrime(n: Int): Boolean =
   val lastDigit = (BigInt(n)/%BigInt(10))._2.intValue
   // false if unit place ends with 0,2,4,6,8
@@ -278,5 +289,25 @@ def isPrime(n: Int): Boolean =
   // If sum of digits divisible by 3, then not prime number
   else if sumOfDigits(n) % 3 == 0 then
     false
-  else true
+  else
+    genPrime(sqrt(n).toInt).forall(n%_!=0)
+
+def factorize(n: Int): List[Int] =
+  val factors = ArrayBuffer[Int]()
+  val uniquePrimes = genPrime(sqrt(n).toInt).filter(n%_==0)
+  var tempN = n
+  for u <- uniquePrimes do
+    while tempN % u == 0 do
+      factors.addOne(u)
+      tempN/=u
+  factors.toList
   
+// problem 32
+// https://byjus.com/maths/greatest-common-divisor/
+// scala> gcd(36, 63)
+// val res92: Int = 9
+def gcd(n1: Int, n2: Int): Int =
+  val commonFactors = factorize(n1).intersect(factorize(n2))
+  if commonFactors.length == 0 then 1
+  else commonFactors.reduce(_ * _)
+
