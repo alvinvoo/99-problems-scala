@@ -1,3 +1,4 @@
+import scala.math.*, scala.collection.mutable.*
 //https://www.ic.unicamp.br/~meidanis/courses/mc336/problemas-lisp/L-99_Ninety-Nine_Lisp_Problems.html
 // problem 1
 // how generics method work
@@ -292,15 +293,16 @@ def isPrime(n: Int): Boolean =
   else
     genPrime(sqrt(n).toInt).forall(n%_!=0)
 
+// problem 35
 def factorize(n: Int): List[Int] =
   val factors = ArrayBuffer[Int]()
-  val uniquePrimes = genPrime(sqrt(n).toInt).filter(n%_==0)
+  val uniquePrimes = genPrime(n).filter(n%_==0)
   var tempN = n
   for u <- uniquePrimes do
     while tempN % u == 0 do
       factors.addOne(u)
       tempN/=u
-  factors.toList
+  factors.toList 
   
 // problem 32
 // https://byjus.com/maths/greatest-common-divisor/
@@ -310,4 +312,19 @@ def gcd(n1: Int, n2: Int): Int =
   val commonFactors = factorize(n1).intersect(factorize(n2))
   if commonFactors.length == 0 then 1
   else commonFactors.reduce(_ * _)
+
+// problem 33
+def coprime(n1: Int, n2: Int): Boolean =
+  gcd(n1,n2) == 1
+
+// problem 34
+// Euler's so-called totient function phi(m) is defined as the NUMBER (size) of positive integers r (1 <= r < m) that are coprime to m.
+//  Example: m = 10: r = 1,3,7,9; thus phi(m) = 4. Note the special case: phi(1) = 1.
+//  For the example, there are FOUR coprimes for 10 (less than 10, excluding itself)
+def totientPhi(n: Int): Int =
+  var totientSize = 0
+  for i <- 1 until n do
+      if coprime(i, n) then totientSize += 1
+  totientSize
+
 
