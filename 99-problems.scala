@@ -294,7 +294,7 @@ def isPrime(n: Int): Boolean =
     genPrime(sqrt(n).toInt).forall(n%_!=0)
 
 // problem 35
-def factorize(n: Int): List[Int] =
+def primeFactor(n: Int): List[Int] =
   val factors = ArrayBuffer[Int]()
   val uniquePrimes = genPrime(n).filter(n%_==0)
   var tempN = n
@@ -309,7 +309,7 @@ def factorize(n: Int): List[Int] =
 // scala> gcd(36, 63)
 // val res92: Int = 9
 def gcd(n1: Int, n2: Int): Int =
-  val commonFactors = factorize(n1).intersect(factorize(n2))
+  val commonFactors = primeFactor(n1).intersect(primeFactor(n2))
   if commonFactors.length == 0 then 1
   else commonFactors.reduce(_ * _)
 
@@ -327,4 +327,71 @@ def totientPhi(n: Int): Int =
       if coprime(i, n) then totientSize += 1
   totientSize
 
+// problem 35
+// see primeFactor above
+//
 
+// problem 36
+def primeFactorsMult(n: Int): List[(Int, Int)] =
+  encode(primeFactor(n)).map(t => 
+      val (a,b) = t
+      (b,a)
+      )
+
+// problem 37
+// m = 10: primeFactors = 2,5
+// primeFactorMult = ((2 1) (5 1))
+// formula: phi(m) = (p1 - 1) * p1 ** (m1 - 1) * (p2 - 1) * p2 ** (m2 - 1) * (p3 - 1) * p3 ** (m3 - 1) * ..
+// phi(m) = ((2 - 1)* 2 ** 0) * ((5 - 1)*5 ** 0) 
+//        = 1 * 1 * 4 * 1 = 4
+def phiImproved(n: Int): Int =
+  // primeFactorsMult(n).fold(1)((acc: Int, t: (Int, Int)) =>
+  //   val (v,m) = t
+  //   acc * (v - 1) * pow(v, (m - 1) 
+  //   )
+  var acc = 1
+  for pf <- primeFactorsMult(n) do
+    val (v,m) = pf
+    acc *= ((v - 1) * pow(v, (m - 1)).toInt)
+  acc
+
+// problem 38
+// while p#34 totientPhi(n) needs to do gcd (which make use of primeFactor twice) with O(n)
+// p#37 do primeFactor ONCE and do O(#pf) calculations only
+// scala> def time[A](f: => A) = {
+//      |   val s = System.nanoTime
+//      |   val ret = f
+//      |   println("time: "+(System.nanoTime-s)/1e6+"ms")
+//      |   ret
+//      | }
+// def time[A](f: => A): A
+//
+// scala> time { 10 * 2 }
+// time: 0.219932ms
+// val res14: Int = 20
+//
+// scala> time(totientPhi(315))
+// time: 43.583117ms
+// val res15: Int = 144
+//
+// scala> time(phiImproved(315))
+// time: 0.418312ms // 100x faster
+// val res16: Int = 144
+
+// problem 39
+def primeList(l: Int, u: Int): List[Int] =
+  genPrime(u).dropWhile(_<l)
+
+// problem 40
+// Goldbach's conjecture
+// Every positive even number greater than 2 is the sum of two prime numbers
+// 28 = (5 23)
+def goldbach(n: Int): List[(Int, Int)] =
+  if n <= 2 || n % 2 != 0 then
+    List()
+  else
+    val primes = genPrime(n)
+    val primesDiff = primes.map(n-_) // should be an even length list
+    val pl = primes.intersect(primesDiff)
+    val (fh, sh) = pl.splitAt(pl.length/2)
+    fh.zip(sh.reverse)
