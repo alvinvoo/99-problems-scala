@@ -395,3 +395,28 @@ def goldbach(n: Int): List[(Int, Int)] =
     val pl = primes.intersect(primesDiff)
     val (fh, sh) = pl.splitAt(pl.length/2)
     fh.zip(sh.reverse)
+
+def goldbachOne(n: Int): (Int, Int) =
+  if n <= 2 || n % 2 != 0 then
+    (-1, -1)
+  else
+    val primes = genPrime(n)
+    val primesDiff = primes.map(n-_) // should be an even length list
+    val sh = primesDiff.dropWhile(!primes.contains(_)).head
+    (n-sh, sh)
+
+// problem 41 - both parts
+// scala> goldbachList(1, 2000, 50)
+// val res23: collection.mutable.Map[Int, (Int, Int)] = HashMap(992 -> (73,919), 1856 -> (67,1789), 1382 -> (61,1321), 1928 -> (61,1867))
+def goldbachList(l: Int, u: Int, limit: Int = 1): Map[Int, (Int, Int)] =
+  var retMap: Map[Int, (Int, Int)] = Map()
+  for i <- Range.inclusive(l, u) 
+      if i % 2 == 0
+  do
+    val (f, s) = goldbachOne(i)
+    if f > limit && s > limit then
+      retMap += (i -> (f, s)) 
+  retMap
+
+
+    
