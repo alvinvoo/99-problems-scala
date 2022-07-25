@@ -418,5 +418,51 @@ def goldbachList(l: Int, u: Int, limit: Int = 1): Map[Int, (Int, Int)] =
       retMap += (i -> (f, s)) 
   retMap
 
+// problem 46 - truth tables
+def and(a: Boolean, b: Boolean): Boolean =
+  a & b
+def or(a: Boolean, b: Boolean): Boolean =
+  a | b
+def nand(a: Boolean, b: Boolean): Boolean =
+  !(a & b)
+def nor(a: Boolean, b: Boolean): Boolean =
+  !(a | b)
+// exactly one input must be true for the output to be true.
+def xor(a: Boolean, b: Boolean): Boolean =
+  a != b
 
-    
+// default is 2^2 table
+// scala> genAB()
+// val res25: List[List[Boolean]] = List(List(true, true), List(true, false), List(false, true), List(false, false))
+def genAB(n: Int = 2): List[List[Boolean]] =
+  if n == 2 then
+    List(List(true, true), List(true, false), List(false, true), List(false, false))
+  else
+    genAB(n-1).flatMap(a =>
+        List(a ++ List(true), a ++ List(false))
+        )
+
+// scala> truthTableAB((a: Boolean, b: Boolean) => and(a, or(a, b)))
+// val res34: List[List[Boolean]] = List(List(true, true, true), List(true, false, true), List(false, true, false), List(false, false, false))
+def truthTableAB(f: (Boolean, Boolean) => Boolean): List[List[Boolean]] =
+  genAB().map(a =>
+      val List(v1, v2) = a
+      List(v1, v2, f(v1, v2))
+      )
+
+// problem 47
+// can extend native Boolean class?
+// scala> true andI false // can infix like this
+// val res35: Boolean = false
+extension(a: Boolean)
+  def andI(b: Boolean): Boolean = a & b
+  def orI(b: Boolean): Boolean = a | b
+  def nandI(b: Boolean): Boolean = !(a & b)
+  def norI(b: Boolean): Boolean = !(a | b)
+  // exactly one input must be true for the output to be true.
+  def xorI(b: Boolean): Boolean = a != b
+
+// scala> truthTableAB((a: Boolean, b: Boolean) => a andI (a orI b))
+// val res38: List[List[Boolean]] = List(List(true, true, true), List(true, false, true), List(false, true, false), List(false, false, false))
+
+
