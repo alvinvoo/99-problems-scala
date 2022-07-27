@@ -461,8 +461,64 @@ extension(a: Boolean)
   def norI(b: Boolean): Boolean = !(a | b)
   // exactly one input must be true for the output to be true.
   def xorI(b: Boolean): Boolean = a != b
+  def equI(b: Boolean): Boolean = a == b
 
 // scala> truthTableAB((a: Boolean, b: Boolean) => a andI (a orI b))
 // val res38: List[List[Boolean]] = List(List(true, true, true), List(true, false, true), List(false, true, false), List(false, false, false))
 
+// problem 48
+// since number of parameters are not known before hand. Need to use currying?
+// HOF with varargs as parameter doesnt seem to work
+// scala> gf
+// val res39: (Boolean, Boolean, Boolean) => Boolean = Lambda$2209/1053484140@21ee07da
+//
+// scala> val f: (Boolean*) => Boolean = gf
+// def truthTable(n: Int = 2, f: Boolean* => Boolean): List[List[Boolean]] =
+//   genMap(n).map(a =>
+//       a ++ List(f(a:_*))
+//       )
+// macro MIGHT work.. will look later
+
+// problem 49
+def gray(n: Int): List[String] =
+  if n <= 1 then
+    List("0", "1")
+  else
+    gray(n-1).flatMap(a =>
+        List("0", "1").map(_++a) 
+        )
+// scala> gray(1)
+// val res0: List[String] = List(0, 1)
+// scala> gray(2)
+// val res1: List[String] = List(00, 10, 01, 11)
+// scala> gray(3)
+// val res2: List[String] = List(000, 100, 010, 110, 001, 101, 011, 111)
+
+// problem 50
+// huffman code
+// referred from: https://www.programiz.com/dsa/huffman-coding 
+type Node = NodeTree | String
+class NodeTree(l: Node, r: Node):
+  def children() = (l, r) 
+  override def toString() =
+    s"${l}_${r}"
+end NodeTree
+
+def huffman_code(node: Node, binString: String =""): Map[String, String] =
+  node match 
+    case _: String => Map(node.asInstanceOf[String] -> binString)
+    case _ => 
+      val (l, r) = node.asInstanceOf[NodeTree].children()
+      huffman_code(l, binString+"0") ++ huffman_code(r, binString+"1")
+
+def huffman(f: List[(String, Int)]): Map[String, String] =
+  var lb: List[(Node, Int)] = f 
+  // first create the tree
+  while lb.length > 1 do
+    lb = lb.sortWith((a,b) => a._2 < b._2)
+    val List(l, r) = lb.take(2)
+    lb = lb.drop(2) :+ (NodeTree(l._1, r._1), l._2 + r._2)
+  // traverse the tree the get the code for each node leaf
+  huffman_code(lb(0)._1)
+    
 
