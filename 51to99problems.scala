@@ -15,11 +15,15 @@ def isTree[A](l: List[A]): Boolean =
     case List(_:A, b: List[A], null)  => isTree(b)
     case _ => false
 
+import math.Ordered.orderingToOrdered
 // problem 55
 // better have a generic Tree class 
-class Tree[A](var data: A, var left: Tree[A], var right: Tree[A]):
+class Tree[A](var data: A, var left: Tree[A] = null, var right: Tree[A] = null):
   def updateDataInPlace(data: A) =
     this.data = data
+
+  def swap(): Tree[A] =
+    Tree(this.data, this.right, this.left)
 
   def swapInPlace() = 
     val tt = left
@@ -44,7 +48,7 @@ class Tree[A](var data: A, var left: Tree[A], var right: Tree[A]):
 
   def isNodeLeaf(): Boolean =
     left == null && right == null
-    
+
   override def toString = s"|${left}<-${data}->${right}|"
 end Tree
 
@@ -53,6 +57,17 @@ object Tree:
    if x == null then null
    else if x.isNodeLeaf() then Tree(x.data, null, null)
    else Tree(x.data, Tree.clone(x.left), Tree.clone(x.right))
+ def toList[A](x: Tree[A]): List[Any] =
+   if x == null then List()
+   else if x.isNodeLeaf() then List(x.data, null, null)
+   else List(x.data, Tree.toList(x.left), Tree.toList(x.right))
+ def bstInsert[A: Ordering](x: Tree[A] = null, key: A): Tree[A] =
+    if x == null then Tree(key)
+    else 
+      if key < x.data then
+        Tree(x.data, Tree.bstInsert(x.left, key), x.right)
+      else
+        Tree(x.data, x.left, Tree.bstInsert(x.right, key))
 
 def cBalTreeOne[A](data: A, n: Int): Tree[A] =
   if n < 1 then null
@@ -80,4 +95,34 @@ def cBalTreePrint[A](data: A, n: Int): Unit =
   println(s"Original tree: ${t}")
   cBalTreePrintRest(t)
 
-  
+// problem 56
+// scala> val t = Tree('A',Tree('A',null,Tree('A', null, null)), Tree('A',Tree('B',null, null),null))
+// val t: Tree[Char] = ||null<-A->|null<-A->null||<-A->||null<-B->null|<-A->null||
+//
+// scala> isTreeSymmetrical(t)
+// val res23: Boolean = true
+def convertToListWEmptyData[A](x: Tree[A]): List[Any] =
+   if x == null then List()
+   else if x.isNodeLeaf() then List(0, null, null)
+   else List(0, convertToListWEmptyData(x.left), convertToListWEmptyData(x.right))
+
+def isTreeSymmetrical[A](tree: Tree[A]): Boolean = 
+  if tree == null || tree.isNodeLeaf() then true
+  else
+    val tll = convertToListWEmptyData(tree.left.swap())
+    val tr = convertToListWEmptyData(tree.right)
+    tll == tr
+
+// problem 57 - BST 
+def bstConstruct(l: List[Int]): Tree[Int] = 
+  l.tail.foldLeft(Tree(l.head))(Tree.bstInsert(_, _))
+
+//scala> bstSymmetric(List(5,3,18,1,4,12,21))
+// val res42: Boolean = true
+// scala> bstSymmetric(List(3,2,5,7))
+// val res43: Boolean = false
+def bstSymmetric(l: List[Int]): Boolean =
+  isTreeSymmetrical(bstConstruct(l))
+
+
+
