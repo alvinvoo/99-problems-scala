@@ -225,6 +225,7 @@ def group3[A](l: List[A]): List[List[List[A]]] =
       r
     )
 
+// this one is the cartesion produce between 2 lists
 def listProduct[A](l1: List[A], l2: List[A]) =
   for a1 <- l1
       a2 <- l2

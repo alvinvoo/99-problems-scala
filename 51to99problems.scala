@@ -18,33 +18,9 @@ def isTree[A](l: List[A]): Boolean =
 import math.Ordered.orderingToOrdered
 // problem 55
 // better have a generic Tree class 
-class Tree[A](var data: A, var left: Tree[A] = null, var right: Tree[A] = null):
-  def updateDataInPlace(data: A) =
-    this.data = data
-
+class Tree[A](val data: A, val left: Tree[A] = null, val right: Tree[A] = null):
   def swap(): Tree[A] =
-    Tree(this.data, this.right, this.left)
-
-  def swapInPlace() = 
-    val tt = left
-    this.left = right
-    this.right = tt
-
-  def swapInPlaceWithDirs(l: List[String]): Boolean =
-    var tt = this
-    for ll <- l do 
-      ll match
-      case "left" | "l" => tt = tt.left
-      case "right" | "r" => tt = tt.right
-    // if this is a node leaf, then nothing to swap
-    // return false
-    // println(s"tt is ${tt}")
-    if tt == null || tt.isNodeLeaf()
-    then 
-      false
-    else 
-      tt.swapInPlace()
-      true
+    Tree(data, right, left)
 
   def isNodeLeaf(): Boolean =
     left == null && right == null
@@ -69,32 +45,30 @@ object Tree:
       else
         Tree(x.data, x.left, Tree.bstInsert(x.right, key))
 
-def cBalTreeOne[A](data: A, n: Int): Tree[A] =
-  if n < 1 then null
-  else if n == 1 then Tree(data, null, null)
-  else
-    val nn = n - 1
-    var f1 = floor; var f2 = ceil
-    Tree(data, cBalTreeOne(data, f1(nn/2.0).toInt), cBalTreeOne(data, f2(nn/2.0).toInt))
-
 // the number of variations would be 2^(#longest valid depth)
-def cBalTreePrintRest[A](tog: Tree[A], dir: List[String] = List()): Unit =
-    val tclone = Tree.clone(tog)
-    if tclone.swapInPlaceWithDirs(dir) then
-      // if previous dir encounters a node leaf then
-      // nothing to print/proceed
-      println(tclone)
-      cBalTreePrintRest(tog, dir :+ "l")
-      cBalTreePrintRest(tclone, dir :+ "l")
-      cBalTreePrintRest(tog, dir :+ "r")
-      cBalTreePrintRest(tclone, dir :+ "r")
-  
-// have duplicates - coz the clone flipped might attempt back the flip
-def cBalTreePrint[A](data: A, n: Int): Unit =
-  val t = cBalTreeOne(data, n)
-  println(s"Original tree: ${t}")
-  cBalTreePrintRest(t)
+// reuse previous
+def listProduct[A](l1: List[A], l2: List[A]) =
+  for a1 <- l1
+      a2 <- l2
+  yield
+      List(a1) ++ List(a2)
 
+def genTreeProducts[A](data: A, l1: List[Tree[A]], l2: List[Tree[A]]): List[Tree[A]] =
+  listProduct(l1, l2).map(a =>
+      val List(t1, t2) = a
+      Tree(data, t1, t2)
+      )
+
+def cBalTree[A](data: A, n: Int): List[Tree[A]] =
+  n match
+  case n if n <= 0 => List(null)
+  case n if n % 2 == 0 => 
+    genTreeProducts(data, cBalTree(data, (n-2)/2), cBalTree(data, n/2)) ++ genTreeProducts(data, cBalTree(data, n/2), cBalTree(data, (n-2)/2))
+  case _ => 
+    genTreeProducts(data, cBalTree(data, (n-1)/2), cBalTree(data, (n-1)/2))
+
+def cBalTreePrint[A](data: A, n: Int): Unit =
+  cBalTree(data, n).foreach(println)
 // problem 56
 // scala> val t = Tree('A',Tree('A',null,Tree('A', null, null)), Tree('A',Tree('B',null, null),null))
 // val t: Tree[Char] = ||null<-A->|null<-A->null||<-A->||null<-B->null|<-A->null||
