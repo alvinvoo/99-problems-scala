@@ -83,7 +83,7 @@ def convertToListWEmptyData[A](x: Tree[A]): List[Any] =
 def isTreeSymmetrical[A](tree: Tree[A]): Boolean = 
   if tree == null || tree.isNodeLeaf() then true
   else
-    val tll = convertToListWEmptyData(tree.left.swap())
+    val tll = convertToListWEmptyData(if tree.left == null then null else tree.left.swap())
     val tr = convertToListWEmptyData(tree.right)
     tll == tr
 
@@ -97,6 +97,117 @@ def bstConstruct(l: List[Int]): Tree[Int] =
 // val res43: Boolean = false
 def bstSymmetric(l: List[Int]): Boolean =
   isTreeSymmetrical(bstConstruct(l))
+
+// problem 58
+def symCbalTrees(n: Int): List[Tree[Char]] =
+  cBalTree('A', n).filter(isTreeSymmetrical)
+
+def symBalTreesPrint() =  
+  for i <- Range(1,58) do
+    println(s"${i} : ${symCbalTrees(i).length}")
+/**
+ *
+1 : 1
+2 : 0
+3 : 1
+4 : 0
+5 : 2
+6 : 0
+7 : 1
+8 : 0
+9 : 4
+10 : 0
+11 : 4
+12 : 0
+13 : 4
+14 : 0
+15 : 1
+16 : 0
+17 : 8
+18 : 0
+19 : 16
+20 : 0
+21 : 32
+22 : 0
+23 : 16
+24 : 0
+25 : 32
+26 : 0
+27 : 16
+28 : 0
+29 : 8
+30 : 0
+31 : 1
+32 : 0
+33 : 16
+34 : 0
+35 : 64
+36 : 0
+37 : 256
+38 : 0
+39 : 256
+40 : 0
+41 : 1024
+42 : 0
+43 : 1024
+44 : 0
+45 : 1024
+46 : 0
+47 : 256
+48 : 0
+49 : 1024
+50 : 0
+51 : 1024
+52 : 0
+53 : 1024
+54 : 0
+55 : 256
+56 : 0
+57 : 256
+ */
+
+// for one roughly balanced tree only
+// with node counts as data instead
+def cBalTreeOne(n: Int): Tree[Int] =
+  n match
+  case n if n <= 0 => null
+  case 1 => Tree(1)
+  case _ => 
+    Tree(n, cBalTreeOne(math.ceil((n-1)/2.0).toInt), cBalTreeOne(math.floor((n-1)/2.0).toInt))
+
+def collectNodes(t: Tree[Int]): List[(Int, Int)] =
+  if t == null then List((0,0))
+  else
+    val tl = if t.left != null then t.left.data else 0
+    val tr = if t.right!= null then t.right.data else 0
+    List((tl, tr)) ++ collectNodes(t.left) ++ collectNodes(t.right)
+
+// formula for calculating balance symmetry variations
+// as long as for a root-tree its two sub-trees are not symmetrical (i.e. the node count is not the same), they can be mirrored, hence a variation of 2
+// dot product (or just multiply) all these variations of every nodes but divided by 2 (becoz the main root-sub-trees should already be symmetrical)
+def calcVariations(n: Int): Int =
+  val pow2 = collectNodes(cBalTreeOne(n)).filter(_!=_).length / 2
+  math.pow(2, pow2).toInt
+
+// problem 58 
+// take a Tree and count its balance symmetry variants based
+// on a simplified function
+def countSymBalTree(n: Int): Int = 
+  // IF n is even, then its 0 else calculate the variations
+  if n % 2 == 0 then 0
+  else calcVariations(n)
+
+// problem 59
+// similar to problem 55 - complete balance tree
+// but instead recurse on Height instead, look at case when h = 2
+// each result of h values depends on the building blocks of previous h values
+def hbalTree[A](data: A = 'X', h: Int): List[Tree[A]] =
+    if h == 0 then List(null) 
+    else if h == 1 then List(Tree(data))
+    else
+      genTreeProducts(data, hbalTree(data, h-1), hbalTree(data, h-1)) ++
+      genTreeProducts(data, hbalTree(data, h-1), hbalTree(data, h-2)) ++
+      genTreeProducts(data, hbalTree(data, h-2), hbalTree(data, h-1)) 
 
 
 
