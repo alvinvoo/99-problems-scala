@@ -44,6 +44,12 @@ object Tree:
         Tree(x.data, Tree.bstInsert(x.left, key), x.right)
       else
         Tree(x.data, x.left, Tree.bstInsert(x.right, key))
+ def countNodes[A](x: Tree[A], init: Int = 2): Int =
+    if x == null then 0
+    else 
+      val lc = if x.left != null then Tree.countNodes(x.left, init + 1) else 0
+      val rc = if x.right!= null then Tree.countNodes(x.right, init + 1) else 0
+      1 + lc + rc
 
 // the number of variations would be 2^(#longest valid depth)
 // reuse previous
@@ -208,6 +214,163 @@ def hbalTree[A](data: A = 'X', h: Int): List[Tree[A]] =
       genTreeProducts(data, hbalTree(data, h-1), hbalTree(data, h-1)) ++
       genTreeProducts(data, hbalTree(data, h-1), hbalTree(data, h-2)) ++
       genTreeProducts(data, hbalTree(data, h-2), hbalTree(data, h-1)) 
+
+// problem 60
+def maxNodes(h: Int): Int = math.pow(2, h).toInt - 1
+def minNodes(h: Int): Int =
+  // base min nodes are h = 1 and 2, which equals to 1 and 2
+  // subsequent ones are made of previous 2 consecutive min nodes + 1
+  h match
+    case 0 | 1 | 2 => h
+    case _ => 1 + minNodes(h-1) + minNodes(h-2)
+
+// amount of nodes in each height level
+def amtOfNodes(h: Int): Int =
+  h match
+    case 0 | 1 | 2 => h
+    case _ => amtOfNodes(h - 1) + amtOfNodes(h - 2)
+
+// an inverse of above minNodes
+def maxHeight(n: Int): Int =
+  var agg = 1
+  var height = 1
+  while agg < n do
+    height+=1 
+    agg+=amtOfNodes(height)
+
+  height
+
+// more efficient iterative way (based on the lisp answer)
+def maxHeight2(n: Int): Int =
+  maxHeightOne(0, 0, 1, n)
+
+def maxHeightOne(curLvl: Int, minNodesForCurLvl: Int, minNodesForNextLvl: Int, n: Int): Int = 
+  if minNodesForNextLvl > n then curLvl 
+  else
+    maxHeightOne(curLvl + 1, minNodesForNextLvl, 1 + minNodesForCurLvl + minNodesForNextLvl, n)
+
+// opposite of maxNodes
+def minHeight(n: Int): Int = math.ceil(math.log(n + 1) / math.log(2)).toInt
+
+/**
+ scala> time(maxHeight(330))
+time: 0.13488ms
+val res21: Int = 11
+
+scala> time(maxHeight2(330))
+time: 0.019483ms
+val res22: Int = 11
+*
+**/
+
+// problem 60 - seems kinda brute force way of 'filtering' the whole list of hbalTrees
+def hbalTreeNodes(n: Int): List[Tree[Char]] = 
+  val minH = minHeight(n)
+  val maxH = maxHeight(n)
+
+  Range.inclusive(minH, maxH).foldLeft(List(): List[Tree[Char]])((acc, x) => {
+    acc ++ hbalTree('X', x).filter(Tree.countNodes(_)==n)
+  })
+
+/**
+ *
+scala> hbalTreeNodes(7).length
+val res3: Int = 17
+
+scala> hbalTreeNodes(10).length
+val res4: Int = 60
+
+scala> hbalTreeNodes(15).length
+val res5: Int = 1553
+ */
+
+/**
+ *
+scala> time(hbalTreeNodes(15).length)
+time: 63.729702ms
+val res6: Int = 1553
+ */
+
+/**
+ * compared to the Lisp solution - which only took 3ms (while DP took no time at all)
+ *
+ *
+* (time (length (hbal-tree-nodes 15)))
+Evaluation took:
+  0.003 seconds of real time
+  0.000851 seconds of total run time (0.000000 user, 0.000851 system)
+  33.33% CPU
+  2,196,397 processor cycles
+  390,080 bytes consed
+* (time (length (hbal-tree-nodes-dp 15)))
+Evaluation took:
+  0.000 seconds of real time
+  0.000491 seconds of total run time (0.000454 user, 0.000037 system)
+  100.00% CPU
+  1,220,810 processor cycles
+  422,656 bytes consed
+ *
+ *
+ */
+
+/**
+ * but we do need to take note of the baseline comparison
+ *
+scala> time(1+1)
+time: 0.0149ms
+val res7: Int = 2
+ *
+* (time (+ 1 1))
+Evaluation took:
+  0.000 seconds of real time
+  0.000003 seconds of total run time (0.000003 user, 0.000000 system)
+  100.00% CPU
+  1,713 processor cycles
+  0 bytes consed
+ */
+
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+
+type GTree = Tree[Char] | Null | Nothing
+
+def hbalTreeNodesDP(n: Int): List[Tree[Char]] = 
+  // generate the DP tree
+  val h = maxHeight2(n) - 1
+  hbalTreeTable(n, h)(n).fold(List())(_++_)
+
+def hbalTreeTable(n: Int, h: Int): Array[Array[List[GTree]]] =
+  val ab = Array.ofDim[List[GTree]](n+1,h+1)
+  // since ni = 0 & hi = 0 is just gonna be null, start from 1
+  for ni <- Range.inclusive(0,n) do
+    for hi <- Range.inclusive(0,h) do
+      val lab = ListBuffer[GTree]()
+      for i <- Range(0, ni) do
+        lab ++= 
+        (genTreeProducts('X', 
+          listHbalTrees(i, hi-2, ab), 
+          listHbalTrees(ni-i-1, hi-1, ab)) ++
+        genTreeProducts('X', 
+          listHbalTrees(i, hi-1, ab), 
+          listHbalTrees(ni-i-1, hi-1, ab)) ++
+        genTreeProducts('X', 
+          listHbalTrees(i, hi-1, ab), 
+          listHbalTrees(ni-i-1, hi-2, ab)))
+      ab(ni)(hi) = lab.toList
+  ab
+
+def listHbalTrees(n: Int, h: Int, ab: Array[Array[List[GTree]]]): List[GTree] =
+  h match 
+    case -2 => List()
+    case -1 => if n==0 then List(null) else List()
+    case _ => ab(n)(h)
+
+// 10x improvement :) 
+// scala> time(hbalTreeNodesDP(15).length)
+// time: 6.270938ms
+// val res62: Int = 1553
+//
+
+
 
 
 
