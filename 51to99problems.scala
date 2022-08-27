@@ -25,6 +25,9 @@ class Tree[A](val data: A, val left: Tree[A] = null, val right: Tree[A] = null):
   def isNodeLeaf(): Boolean =
     left == null && right == null
 
+  def isNotNodeLeaf(): Boolean =
+    left != null || right != null
+
   override def toString = s"|${left}<-${data}->${right}|"
 end Tree
 
@@ -369,6 +372,51 @@ def listHbalTrees(n: Int, h: Int, ab: Array[Array[List[GTree]]]): List[GTree] =
 // time: 6.270938ms
 // val res62: Int = 1553
 //
+
+// problem 61
+def countLeaves[A](t: Tree[A], n: Int = 2) = Tree.countNodes[A](t, n)
+
+// problem 61A
+def leaves[A](t: Tree[A], l: List[A] = List()): List[A] =
+  if t == null then l
+  else if t.isNodeLeaf() then l :+ t.data
+  else
+    leaves(t.left, l) ++ leaves(t.right, l)
+
+// scala> val t = Tree('A', Tree('B'), Tree('C', Tree('D', Tree('E'), Tree('E')), Tree('F')))
+// val t: Tree[Char] = ||null<-B->null|<-A->|||null<-E->null|<-D->|null<-E->null||<-C->|null<-F->null|||
+//
+// scala> leaves(t)
+// val res8: List[Char] = List(B, E, E, F)
+
+// problem 62
+def internals[A](t: Tree[A]) = internals1(t, Set[A]()).toList
+def internals1[A](t: Tree[A], l: Set[A] = Set()): Set[A] =
+  if t == null || t.isNodeLeaf() then l
+  else 
+    internals1(t.left, l + t.data) ++ internals1(t.right, l + t.data)
+
+// problem 62B
+def atLevel[A](t: Tree[A], n: Int = 1, l: List[A] = List()): List[A] = 
+  if t == null then l
+  else if n == 1 then l :+ t.data
+  else
+    atLevel(t.left, n - 1, l) ++ atLevel(t.right, n - 1, l)
+
+// scala> val t = Tree('A', Tree('B'), Tree('C', Tree('D', Tree('E'), Tree('E')), Tree('F')))
+// val t: Tree[Char] = ||null<-B->null|<-A->|||null<-E->null|<-D->|null<-E->null||<-C->|null<-F->null|||
+// scala> atLevel(t, 4)
+// val res31: List[Char] = List(E, E)
+//
+// scala> atLevel(t, 3)
+// val res32: List[Char] = List(D, F)
+//
+// scala> atLevel(t, 2)
+// val res33: List[Char] = List(B, C)
+//
+// scala> atLevel(t, 1)
+// val res34: List[Char] = List(A)
+
 
 
 
